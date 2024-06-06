@@ -1,12 +1,13 @@
 package com.example.termp_new
 
-//import org.opencv.android.NativeCameraView.TAG
-//import org.opencv.android.OpenCVLoader
+import org.opencv.android.NativeCameraView.TAG
+import org.opencv.android.OpenCVLoader
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.media.Image
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity

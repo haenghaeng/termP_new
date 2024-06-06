@@ -20,5 +20,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "termP_new"
-include(":app")
+include(":app", ":openCV")
  
