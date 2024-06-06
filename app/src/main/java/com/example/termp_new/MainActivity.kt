@@ -1,10 +1,11 @@
 package com.example.termp_new
 
+import android.content.ContentResolver
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.ImageButton
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -14,7 +15,13 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import org.opencv.android.OpenCVLoader
 import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.InputStream
+import java.io.OutputStream
+
 
 class MainActivity : AppCompatActivity() {
     lateinit var galleryBtn : ImageButton
@@ -23,6 +30,8 @@ class MainActivity : AppCompatActivity() {
     lateinit var previewView: PreviewView
     
     lateinit var photoFile : File
+
+    val GALLERY_IMAGE_REQUEST_CODE = 1000
 
     // camera 구성에 필요한 변수
     lateinit var preview : Preview
@@ -37,7 +46,10 @@ class MainActivity : AppCompatActivity() {
         init()
     }
 
-    fun init(){
+    /**
+     * 초기화
+     */
+    private fun init(){
         // 버튼, 뷰 연결
         galleryBtn = findViewById(R.id.galleryBtn)
         cameraBtn = findViewById(R.id.cameraBtn)
@@ -62,13 +74,18 @@ class MainActivity : AppCompatActivity() {
         startCamera()
     }
 
-    fun gallery_btn_click(){
-        // 갤러리로 이동, 사진 선택
-        Toast.makeText(this, "gallery", Toast.LENGTH_SHORT).show()
+    /**
+     * 갤러리로 이동하여 사진을 선택함
+     */
+    private fun gallery_btn_click(){
+        val intent = Intent(Intent.ACTION_GET_CONTENT).setType("image/*")
+        startActivityForResult(intent, GALLERY_IMAGE_REQUEST_CODE)
     }
-    fun camera_btn_click(){
-        // 현재 화면 촬영
 
+    /**
+     * 현재 화면을 촬영함
+     */
+    private fun camera_btn_click(){
 //        /////// 임시 코드. 버퍼에 넣지 않고 Pictures/CameraX-Image에 바로 저장하게 설정함
 //        val name = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US)
 //            .format(System.currentTimeMillis())
@@ -101,12 +118,8 @@ class MainActivity : AppCompatActivity() {
                     // insert your code here.
                 }
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                    // insert your code here.
-
                     // ScanActivity 실행
                     startActivity(Intent(this@MainActivity, ScanActivity::class.java))
-
-//                    Toast.makeText(this@MainActivity, "사진 찍음요!", Toast.LENGTH_SHORT).show()
                 }
             })
 
@@ -123,6 +136,8 @@ class MainActivity : AppCompatActivity() {
      * https://developer.android.com/media/camera/camerax/preview?hl=ko
      */
     fun startCamera(){
+        OpenCVLoader.initDebug()
+
         // 1. CameraProvider 요청
         // ProcessCameraProvider는 Camera의 생명주기를 LifeCycleOwner의 생명주기에 Binding 함
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
@@ -151,5 +166,48 @@ class MainActivity : AppCompatActivity() {
         preview.setSurfaceProvider(previewView.getSurfaceProvider())
 
         camera = cameraProvider.bindToLifecycle(this as LifecycleOwner, cameraSelector, imageCapture, preview)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == RESULT_OK && requestCode == GALLERY_IMAGE_REQUEST_CODE) {
+            if (data == null) return
+
+            // 갤러리에서 읽은 파일을 cacheDir에 저장
+            val selectedImage = data.data
+            val contentResolver: ContentResolver = contentResolver
+            var inputStream: InputStream? = null
+            var outputStream: OutputStream? = null
+
+            try {
+                // Input stream from the URI
+                inputStream = selectedImage?.let { contentResolver.openInputStream(it) }
+
+                if (inputStream == null) {
+                    throw IOException("Unable to open input stream from URI")
+                }
+
+                // File in the desired directory
+                outputStream = FileOutputStream(photoFile)
+
+                // Buffer for data transfer
+                val buffer = ByteArray(1024)
+                var bytesRead: Int
+
+                // Transfer data from the input stream to the output stream
+                while ((inputStream.read(buffer).also { bytesRead = it }) != -1) {
+                    outputStream.write(buffer, 0, bytesRead)
+                }
+
+                outputStream.flush()
+            } finally {
+                // Close streams to avoid memory leaks
+                inputStream?.close()
+                outputStream?.close()
+            }
+
+            // ScanActivity 실행
+            startActivity(Intent(this@MainActivity, ScanActivity::class.java))
+        }
     }
 }
