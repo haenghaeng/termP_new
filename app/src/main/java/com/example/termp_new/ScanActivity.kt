@@ -23,22 +23,22 @@ import kotlin.math.sqrt
 
 class ScanActivity : AppCompatActivity() {
 
-    lateinit var save_btn : Button
-    lateinit var reset_btn : Button
+    lateinit var saveBtn : Button
+    lateinit var resetBtn : Button
     lateinit var imageView: ImageView
 
     lateinit var photoFile : File
 
     lateinit var photoBitmap: Bitmap
-    lateinit var photoBitmap_result : Bitmap
+    lateinit var photoBitmapResult : Bitmap
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_scan)
 
         // 버튼, 뷰 연결
-        save_btn = findViewById(R.id.saveBtn)
-        reset_btn = findViewById(R.id.resetBtn)
+        saveBtn = findViewById(R.id.saveBtn)
+        resetBtn = findViewById(R.id.resetBtn)
         imageView = findViewById(R.id.imageView)
         
         // 버튼에 리스너 설정
@@ -189,13 +189,13 @@ class ScanActivity : AppCompatActivity() {
         Imgproc.warpPerspective(src, dst, perspectiveTransform, Size(dw, dh))
 
         // dst와 크기가 같은 Bitmap 생성
-        photoBitmap_result = Bitmap.createBitmap(dst.cols(), dst.rows(), Bitmap.Config.ARGB_8888);
+        photoBitmapResult = Bitmap.createBitmap(dst.cols(), dst.rows(), Bitmap.Config.ARGB_8888);
 
         // 결과를 Mat에서 Bitmap으로 변경
-        Utils.matToBitmap(dst, photoBitmap_result)
+        Utils.matToBitmap(dst, photoBitmapResult)
 
         // ImageView에 결과를 띄움
-        imageView.setImageBitmap(photoBitmap_result)
+        imageView.setImageBitmap(photoBitmapResult)
 
         Toast.makeText(this@ScanActivity, "으헝 됬다 됬어", Toast.LENGTH_SHORT).show()
     }
@@ -215,6 +215,7 @@ class ScanActivity : AppCompatActivity() {
         val maxHeight = max(heightA, heightB)
         return Size(maxWidth, maxHeight)
     }
+
 
 
 }
