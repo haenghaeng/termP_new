@@ -58,13 +58,13 @@ class MainActivity : AppCompatActivity() {
 
         // 버튼에 리스너 설정
         galleryBtn.setOnClickListener{
-            gallery_btn_click()
+            galleryBtnClick()
         }
         cameraBtn.setOnClickListener{
-            camera_btn_click()
+            cameraBtnClick()
         }
         functionBtn.setOnClickListener{
-            function_btn_click()
+            functionBtnClick()
         }
 
         // 임시 디렉토리
@@ -77,7 +77,7 @@ class MainActivity : AppCompatActivity() {
     /**
      * 갤러리로 이동하여 사진을 선택함
      */
-    private fun gallery_btn_click(){
+    private fun galleryBtnClick(){
         val intent = Intent(Intent.ACTION_GET_CONTENT).setType("image/*")
         startActivityForResult(intent, GALLERY_IMAGE_REQUEST_CODE)
     }
@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity() {
     /**
      * 현재 화면을 촬영함
      */
-    private fun camera_btn_click(){
+    private fun cameraBtnClick(){
 //        /////// 임시 코드. 버퍼에 넣지 않고 Pictures/CameraX-Image에 바로 저장하게 설정함
 //        val name = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US)
 //            .format(System.currentTimeMillis())
@@ -125,7 +125,7 @@ class MainActivity : AppCompatActivity() {
 
 
     }
-    fun function_btn_click(){
+    fun functionBtnClick(){
         // ?
         Toast.makeText(this, "function", Toast.LENGTH_SHORT).show()
     }
