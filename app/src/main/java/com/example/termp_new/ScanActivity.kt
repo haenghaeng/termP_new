@@ -1,9 +1,12 @@
 package com.example.termp_new
 
+import android.content.ContentValues
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
@@ -17,9 +20,12 @@ import org.opencv.core.Point
 import org.opencv.core.Size
 import org.opencv.imgproc.Imgproc
 import java.io.File
+import java.io.IOException
+import java.io.OutputStream
+import java.text.SimpleDateFormat
+import java.util.Locale
 import kotlin.math.max
 import kotlin.math.sqrt
-
 
 class ScanActivity : AppCompatActivity() {
 
@@ -42,6 +48,12 @@ class ScanActivity : AppCompatActivity() {
         imageView = findViewById(R.id.imageView)
         
         // 버튼에 리스너 설정
+        saveBtn.setOnClickListener{
+            saveBtnClick()
+        }
+        resetBtn.setOnClickListener{
+            resetBtnClick()
+        }
 
         // CacheDir에서 이미지를 가져옴
         getImageFromCache()
@@ -216,6 +228,54 @@ class ScanActivity : AppCompatActivity() {
         return Size(maxWidth, maxHeight)
     }
 
+    /**
+     * 현재 ImageView에 띄워진 이미지를 저장합니다.
+     */
+    private fun saveBtnClick(){
 
+        val resolver = contentResolver
+        val contentValues = ContentValues().apply {
+            put(MediaStore.MediaColumns.DISPLAY_NAME, SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US).format(System.currentTimeMillis()))
+            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+            if(Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/CameraX-Image")
+            }
+        }
+
+        val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+        var outputStream: OutputStream? = null
+
+        try {
+            if (uri != null) {
+                outputStream = resolver.openOutputStream(uri)
+                if (outputStream != null) {
+                    photoBitmapResult.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
+                }
+            }
+
+            // 메세지 띄움
+            Toast.makeText(this, "저장되었습니다!", Toast.LENGTH_SHORT).show()
+
+            // MainActivity 실행
+            startActivity(Intent(this@ScanActivity, MainActivity::class.java))
+        }
+        catch (e: IOException) {
+            e.printStackTrace()
+        }
+        finally {
+            outputStream?.close()
+        }
+    }
+
+    /**
+     * 현재 ImageView에 있는 사진을 저장하지 않고 MainActivity로 돌아갑니다.
+     */
+    fun resetBtnClick(){
+        // 메세지 띄움
+        Toast.makeText(this, "저장하지 않고 돌아왔습니다!", Toast.LENGTH_SHORT).show()
+
+        // MainActivity 실행
+        startActivity(Intent(this@ScanActivity, MainActivity::class.java))
+    }
 
 }
