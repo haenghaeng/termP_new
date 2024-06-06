@@ -1,17 +1,16 @@
 package com.example.termp_new
 
-import android.net.Uri
-import android.os.Bundle
-import android.util.Log
-import android.widget.Button
-import android.widget.ImageView
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.net.toUri
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 //import org.opencv.android.NativeCameraView.TAG
 //import org.opencv.android.OpenCVLoader
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.media.Image
+import android.os.Build
+import android.os.Bundle
+import android.widget.Button
+import android.widget.ImageView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import java.io.File
 
 class ScanActivity : AppCompatActivity() {
@@ -21,6 +20,8 @@ class ScanActivity : AppCompatActivity() {
     lateinit var imageView: ImageView
 
     lateinit var photoFile : File
+
+    lateinit var photoBitmap: Bitmap
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,11 +40,18 @@ class ScanActivity : AppCompatActivity() {
 //        }
     }
 
-    // cache 디렉토리에 있는 cacheImageTemrP.jpg를 불러옴
+    // cache 디렉토리에 있는 cacheImageTemrP.jpg를 불러와 Bitmap에 저장
     fun getImageFromCache(){
         photoFile = File(cacheDir, "cacheImageTemrP.jpg")
         if(photoFile.exists()){
             imageView.setImageURI(photoFile.toUri())
+
+            val src = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                ImageDecoder.createSource(contentResolver, photoFile.toUri())
+            } else {
+                TODO("VERSION.SDK_INT < P")
+            }
+            photoBitmap = ImageDecoder.decodeBitmap(src).copy(Bitmap.Config.ARGB_8888, true)
         }
     }
 }

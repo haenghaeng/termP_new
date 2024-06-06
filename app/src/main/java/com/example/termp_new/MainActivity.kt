@@ -69,7 +69,7 @@ class MainActivity : AppCompatActivity() {
     fun camera_btn_click(){
         // 현재 화면 촬영
 
-        /////// 임시 코드. 버퍼에 넣지 않고 Pictures/CameraX-Image에 바로 저장하게 설정함
+//        /////// 임시 코드. 버퍼에 넣지 않고 Pictures/CameraX-Image에 바로 저장하게 설정함
 //        val name = SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.US)
 //            .format(System.currentTimeMillis())
 //
@@ -103,9 +103,6 @@ class MainActivity : AppCompatActivity() {
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
                     // insert your code here.
 
-                    // 촬영한 사진을 굳이 ScanActivity로 보낼 필요가 있을까?
-                    // 버퍼에 있으니까 ScanActivity에서 버퍼에 있는 걸 꺼내 쓰면 안됨?
-                    
                     // ScanActivity 실행
                     startActivity(Intent(this@MainActivity, ScanActivity::class.java))
 
@@ -155,7 +152,4 @@ class MainActivity : AppCompatActivity() {
 
         camera = cameraProvider.bindToLifecycle(this as LifecycleOwner, cameraSelector, imageCapture, preview)
     }
-
-
-
 }
