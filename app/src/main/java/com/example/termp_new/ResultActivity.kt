@@ -27,7 +27,8 @@ import java.util.Locale
 import kotlin.math.max
 import kotlin.math.sqrt
 
-class ScanActivity : AppCompatActivity() {
+
+class ResultActivity : AppCompatActivity() {
 
     lateinit var saveBtn : Button
     lateinit var resetBtn : Button
@@ -40,7 +41,7 @@ class ScanActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_scan)
+        setContentView(R.layout.activity_result)
 
         // 버튼, 뷰 연결
         saveBtn = findViewById(R.id.saveBtn)
@@ -57,12 +58,6 @@ class ScanActivity : AppCompatActivity() {
 
         // CacheDir에서 이미지를 가져옴
         getImageFromCache()
-
-//        if (!OpenCVLoader.initDebug()) {
-//            Log.e(TAG, "OpenCV 초기화 실패!")
-//        } else {
-//            Log.d(TAG, "OpenCV 초기화 성공!!!!!")
-//        }
     }
 
     /**
@@ -209,7 +204,7 @@ class ScanActivity : AppCompatActivity() {
         // ImageView에 결과를 띄움
         imageView.setImageBitmap(photoBitmapResult)
 
-        Toast.makeText(this@ScanActivity, "으헝 됬다 됬어", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this@ResultActivity, "으헝 됬다 됬어", Toast.LENGTH_SHORT).show()
     }
 
     /**
@@ -257,7 +252,7 @@ class ScanActivity : AppCompatActivity() {
             Toast.makeText(this, "저장되었습니다!", Toast.LENGTH_SHORT).show()
 
             // MainActivity 실행
-            startActivity(Intent(this@ScanActivity, MainActivity::class.java))
+            startActivity(Intent(this@ResultActivity, MainActivity::class.java))
         }
         catch (e: IOException) {
             e.printStackTrace()
@@ -275,7 +270,7 @@ class ScanActivity : AppCompatActivity() {
         Toast.makeText(this, "저장하지 않고 돌아왔습니다!", Toast.LENGTH_SHORT).show()
 
         // MainActivity 실행
-        startActivity(Intent(this@ScanActivity, MainActivity::class.java))
+        startActivity(Intent(this@ResultActivity, MainActivity::class.java))
     }
 
 }

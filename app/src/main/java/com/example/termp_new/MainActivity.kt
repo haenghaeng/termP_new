@@ -1,11 +1,18 @@
 package com.example.termp_new
 
 import android.content.ContentResolver
+import android.content.Context
 import android.content.Intent
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Path
 import android.os.Bundle
+import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.AppCompatImageView
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -72,6 +79,8 @@ class MainActivity : AppCompatActivity() {
 
         // 카메라 실행
         startCamera()
+
+//        drawPolylines()
     }
 
     /**
@@ -119,7 +128,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
                     // ScanActivity 실행
-                    startActivity(Intent(this@MainActivity, ScanActivity::class.java))
+                    startActivity(Intent(this@MainActivity, ResultActivity::class.java))
                 }
             })
 
@@ -138,12 +147,11 @@ class MainActivity : AppCompatActivity() {
     fun startCamera(){
         OpenCVLoader.initDebug()
 
-        // 1. CameraProvider 요청
-        // ProcessCameraProvider는 Camera의 생명주기를 LifeCycleOwner의 생명주기에 Binding 함
+        // 1. CameraProvider 지정
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
-        // 2. CameraProvier 사용 가능 여부 확인
-        cameraProviderFuture.addListener(Runnable {
+        // 2. CameraProvier에 리스너 추가
+        cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
             bindPreview(cameraProvider)
         }, ContextCompat.getMainExecutor(this))
@@ -207,7 +215,36 @@ class MainActivity : AppCompatActivity() {
             }
 
             // ScanActivity 실행
-            startActivity(Intent(this@MainActivity, ScanActivity::class.java))
+            startActivity(Intent(this@MainActivity, ResultActivity::class.java))
         }
     }
+
+    fun drawPolylines(){
+        // FrameLayout 위에 다각형을 그리는 CustomView 추가
+        val customView: CustomView = CustomView(this)
+        val frameLayout = findViewById<FrameLayout>(R.id.frameLayout)
+        frameLayout.addView(customView)
+    }
+
+    // CustomView 클래스 정의
+    private class CustomView(context: Context?) : AppCompatImageView(context!!) {
+        override fun onDraw(canvas: Canvas) {
+            super.onDraw(canvas)
+
+            // 다각형 그리기
+            val paint = Paint()
+            paint.color = Color.GREEN
+            paint.style = Paint.Style.STROKE
+            paint.strokeWidth = 10f
+
+            val path = Path()
+            path.moveTo(100f, 100f) // 시작점
+            path.lineTo(200f, 100f) // 두 번째 점
+            path.lineTo(150f, 200f) // 세 번째 점
+            path.lineTo(100f, 100f) // 시작점으로 되돌아오는 선(닫힌 다각형을 만들기 위해)
+
+            canvas.drawPath(path, paint)
+        }
+    }
+
 }
