@@ -13,3 +13,4 @@
 .externalNativeBuild
 .cxx
 local.properties
+generate_cxx_metadata_*_timing.txt
