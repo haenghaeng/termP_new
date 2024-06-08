@@ -156,6 +156,6 @@ class MainActivity : AppCompatActivity() {
         camera = cameraProvider.bindToLifecycle(this as LifecycleOwner, cameraSelector, imageCapture, preview)
     }
 
-
+    // mergeTest
 
 }
