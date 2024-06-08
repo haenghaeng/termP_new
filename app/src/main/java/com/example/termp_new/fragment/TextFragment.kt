@@ -15,6 +15,7 @@ class TextFragment : Fragment() {
     lateinit var textView: TextView
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
     }
 
     override fun onCreateView(
