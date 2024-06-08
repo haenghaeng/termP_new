@@ -1,6 +1,9 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+
+    id("com.google.gms.google-services")
+
 }
 
 android {
@@ -13,7 +16,7 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
+        multiDexEnabled =true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -36,14 +39,17 @@ android {
 }
 
 dependencies {
-
+    implementation ("com.google.android.gms:play-services-ads:21.0.0")
+    implementation ("com.android.support:multidex:2.0.1")
+    implementation ("com.google.firebase:firebase-ml-vision:24.0.3")
+    implementation (platform("com.google.firebase:firebase-bom:30.1.0"))
+    implementation ("com.google.firebase:firebase-ml-vision-barcode-model:16.1.1")
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.activity:activity-ktx:1.9.0")
     implementation(project(":openCV"))
-    implementation("com.google.firebase:firebase-ml-vision:24.1.0")
     implementation("com.android.volley:volley:1.2.1")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
