@@ -9,10 +9,7 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import org.json.JSONArray
 import org.json.JSONObject
-/*interface VolleyCallback {
-    fun onSuccess(result: String)
-    fun onError(error: String)
-}*/
+
 public class Gpt {
     companion object {
         var api_key="your_api_key"
