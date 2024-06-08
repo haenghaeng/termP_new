@@ -16,7 +16,6 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-        multiDexEnabled =true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -40,7 +39,6 @@ android {
 
 dependencies {
     implementation ("com.google.android.gms:play-services-ads:21.0.0")
-    implementation ("com.android.support:multidex:2.0.1")
     implementation ("com.google.firebase:firebase-ml-vision:24.0.3")
     implementation (platform("com.google.firebase:firebase-bom:30.1.0"))
     implementation ("com.google.firebase:firebase-ml-vision-barcode-model:16.1.1")
