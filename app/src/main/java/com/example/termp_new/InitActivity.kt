@@ -14,8 +14,9 @@ import androidx.core.content.ContextCompat
  */
 class InitActivity : AppCompatActivity() {
 
-    val REQUEST_CAMERA_PERMISSION = 200;
-    val PERMISSIONS_REQUIRED = arrayOf(android.Manifest.permission.CAMERA)
+    val REQUEST_PERMISSION = 200;
+    val PERMISSIONS_REQUIRED = arrayOf(
+        android.Manifest.permission.CAMERA)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,7 +25,7 @@ class InitActivity : AppCompatActivity() {
         // 모든 권한이 승인되었는지 확인함
         if (!hasPermissions(PERMISSIONS_REQUIRED)) {
             // 사용자에게 권한 요청
-            requestPermissions(PERMISSIONS_REQUIRED, REQUEST_CAMERA_PERMISSION)
+            requestPermissions(PERMISSIONS_REQUIRED, REQUEST_PERMISSION)
         }
         else {
             startActivity(Intent(this@InitActivity, MainActivity::class.java))
@@ -60,15 +61,17 @@ class InitActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_CAMERA_PERMISSION) {
-            if (grantResults.size != 1 || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+
+        if (requestCode == REQUEST_PERMISSION) {
+            if (hasPermissions(PERMISSIONS_REQUIRED)) {
+                // 권한이 모두 부여되었을 때 필요한 작업 수행
+                startActivity(Intent(this@InitActivity, MainActivity::class.java))
+                finish()
+            } else {
+                // 권한이 부여되지 않았을 때 사용자에게 메시지 표시 또는 다른 처리 수행
                 Toast.makeText(this, "권한이 사용자에 의해 거부되었습니다.", Toast.LENGTH_SHORT).show()
                 finish()
             }
-        } else {
-            startActivity(Intent(this@InitActivity, MainActivity::class.java))
-            finish()
         }
-
     }
 }
