@@ -1,17 +1,22 @@
 package com.example.termp_new
 
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
+import androidx.preference.PreferenceManager
 import androidx.viewpager2.widget.ViewPager2
 import com.example.termp_new.fragment.ImageFragment
 import com.example.termp_new.fragment.SummarizeFragment
 import com.example.termp_new.fragment.TextFragment
 import com.example.termp_new.openAi.Image_to_text
+import org.opencv.android.Utils
+import org.opencv.core.Mat
+import org.opencv.imgproc.Imgproc
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -107,7 +112,45 @@ class ResultActivity : AppCompatActivity() {
     fun saveImg(){
         // 저장할 파일 경로 설정
         val dstDir = File("/storage/emulated/0/Pictures/cutImage") // 대상 디렉토리 경로
-        val name = "img.jpg" // 새로운 파일 이름
+
+        // 설정에 저장된 값을 가져옴
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val saveToPNG = sharedPreferences.getBoolean("saveToPNG", false)
+        val saveToBin = sharedPreferences.getBoolean("saveToBlack", false)
+
+        // jpg또는 png로 저장
+        var name = ""
+        if(saveToPNG)
+            name = "img.png" // 새로운 파일 이름
+        else
+            name = "img.jpg" // 새로운 파일 이름
+
+        // 흑백 또는 원본으로 저장
+        if(saveToBin){
+            // temp에서 비트맵 추출
+            val srcBitmap = BitmapFactory.decodeFile(tempFile.absolutePath)
+
+            // 비트맵 OpenCV의 Mat으로 변환
+            val src = Mat()
+            Utils.bitmapToMat(srcBitmap, src)
+
+            // 흑백영상으로 전환
+            val graySrc = Mat()
+            Imgproc.cvtColor(src, graySrc, Imgproc.COLOR_BGR2GRAY)
+
+            // dstBitmap을 binarySrc와 크기가 같은 Bitmap 으로 설정
+            val dstBitmap = Bitmap.createBitmap(graySrc.cols(), graySrc.rows(), Bitmap.Config.ARGB_8888);
+
+            // 결과를 Mat에서 Bitmap으로 변경
+            Utils.matToBitmap(graySrc, dstBitmap)
+
+            // 변경한 Bitmap을 다시 temp에 저장...
+            val outputStream = FileOutputStream(tempFile)
+            dstBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+            outputStream.flush()
+            outputStream.close()
+        }
+
 
         if(!dstDir.exists()){
             dstDir.mkdirs()

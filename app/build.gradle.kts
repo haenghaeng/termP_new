@@ -56,4 +56,5 @@ dependencies {
     implementation("androidx.camera:camera-camera2:1.3.3")
     implementation("androidx.camera:camera-lifecycle:1.3.3")
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation("androidx.preference:preference-ktx:1.1.1")
 }

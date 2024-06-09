@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="기본 설정">
+        <SwitchPreference
+            android:key="saveToBlack"
+            android:title="그림을 흑백으로 저장"
+            android:summary="문서를 흑백으로 처리하여 저장합니다.\n체크하지 않으면 원본 색상을 유지합니다."
+            android:defaultValue="false"
+            />
+        <SwitchPreference
+            android:key="saveToPNG"
+            android:title="그림을 PNG로 저장"
+            android:summary="PNG로 저장합니다.\n체크하지 않으면 JPEG로 저장합니다."
+            android:defaultValue="true"
+            />
+    </PreferenceCategory>
+</PreferenceScreen>

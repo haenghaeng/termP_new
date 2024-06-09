@@ -10,6 +10,7 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.os.Bundle
 import android.os.Looper
+import android.util.Log
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.Toast
@@ -23,6 +24,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import com.example.termp_new.fragment.PreferenceFragment
 import org.opencv.android.OpenCVLoader
 import org.opencv.android.Utils
 import org.opencv.core.Mat
@@ -73,8 +75,10 @@ class MainActivity : AppCompatActivity() {
     // 외곽선 추출에 사용하는 변수
     lateinit var src : Mat // 추출 전 사진의 Mat
     lateinit var resultBitmap : Bitmap // 최종적으로 추출된 문서사진의 bitmap
-    
-    
+
+    // 현재 설정창이 열려 있으면 true
+    var isPref = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -162,8 +166,24 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun functionBtnClick(){
-        // ?
-        Toast.makeText(this, "function", Toast.LENGTH_SHORT).show()
+        // 설정창이 열려있으면 닫음
+        if(isPref){
+            isPref = false
+            supportFragmentManager.findFragmentById(R.id.fragment_container)?.let {
+                supportFragmentManager.beginTransaction()
+                    .remove(it)
+                    .commit()
+            }
+        }
+        // 설정창이 닫혀있으면 열어줌
+        else{
+            isPref = true
+            supportFragmentManager
+                .beginTransaction()
+                .replace(R.id.fragment_container, PreferenceFragment())
+                .addToBackStack(null)
+                .commit()
+        }
     }
 
 
