@@ -1,7 +1,6 @@
 package com.example.termp_new
 
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.widget.Button
@@ -10,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import androidx.viewpager2.widget.ViewPager2
 import com.example.termp_new.fragment.ImageFragment
+import com.example.termp_new.fragment.SummarizeFragment
 import com.example.termp_new.fragment.TextFragment
 import com.example.termp_new.openAi.Image_to_text
 import java.io.File
@@ -27,7 +27,6 @@ class ResultActivity : AppCompatActivity() {
     lateinit var adapter : MyPagerAdapter
 
     lateinit var tempFile : File
-    lateinit var photoBitmapResult : Bitmap
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,6 +52,7 @@ class ResultActivity : AppCompatActivity() {
         // 프래그먼트 지정
         val imageFragment = (adapter.fragments[0]) as ImageFragment
         val textFragment = (adapter.fragments[1]) as TextFragment
+        val summarizeFragment = (adapter.fragments[2]) as SummarizeFragment
 
         // 임시파일 지정
         tempFile = File(cacheDir, "cacheImageTermP.jpg")
@@ -64,15 +64,21 @@ class ResultActivity : AppCompatActivity() {
         // viewpager에 리스너를 연결하여 TextFragment로 옮길 때 함수를 실행
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
-                // Called when a new page has been selected
-                if(position == 0){
+                if(position == 0 && imageFragment.imageView.drawable == null){
                     // 이미지 지정
                     imageFragment.setImage(tempFile.toUri())
                 }
 
-                if(position == 1){
-                    // 추출한 비트맵에서 텍스트 인식
-                    Image_to_text.Write_Text(bitmap, this@ResultActivity, textFragment.textView)
+                if(position == 1 && textFragment.textView.text == "문서에서 텍스트를 추출중입니다."){
+                    // 추출한 비트맵에서 텍스트를 추출하여 textView에 출력
+//                    TODO()
+//                    Image_to_text.Write_Text(bitmap, this@ResultActivity, textFragment.textView)
+                }
+
+                if(position == 2 && summarizeFragment.textView.text == "내용을 요약중입니다.\n잠시만 기다려 주세요!"){
+                    // 추출한 비트맵에서 텍스트를 추출하고 요약본을 textView에 출력
+//                    TODO()
+                    Image_to_text.Write_Text(bitmap, this@ResultActivity, summarizeFragment.textView)
                 }
             }
         })
@@ -85,9 +91,20 @@ class ResultActivity : AppCompatActivity() {
     }
 
     /**
-     * 현재 파일을 저장합니다.
+     * 현재 위치한 fragment에 대응하는 파일을 저장합니다.
      */
     private fun saveBtnClick(){
+        when(viewPager.currentItem){
+            0 -> saveImg()
+            1 -> saveText()
+            2 -> saveSummarizedText()
+        }
+    }
+
+    /**
+     * 추출한 문서를 그림 형태로 저장
+     */
+    fun saveImg(){
         // 저장할 파일 경로 설정
         val dstDir = File("/storage/emulated/0/Pictures/cutImage") // 대상 디렉토리 경로
         val name = "img.jpg" // 새로운 파일 이름
@@ -128,8 +145,25 @@ class ResultActivity : AppCompatActivity() {
         }
     }
 
+
     /**
-     * 현재 사진을 저장하지 않고 MainActivity로 돌아갑니다.
+     * 문서에서 추출한 텍스트를 저장
+     */
+    fun saveText(){
+        TODO()
+    }
+
+    /**
+     * 문서에서 추출한 텍스트의 요약본을 저장
+     */
+    fun saveSummarizedText(){
+        TODO()
+    }
+
+
+
+    /**
+     * 현재 파일을 저장하지 않고 MainActivity로 돌아갑니다.
      */
     fun resetBtnClick(){
         // 임시파일 제거

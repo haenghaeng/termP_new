@@ -9,9 +9,9 @@ import android.widget.TextView
 import com.example.termp_new.R
 
 /**
- * 기존 이미지에서 문서 부분을 추출하고 거기의 텍스트를 화면에 출력
+ * 문서의 내용을 요약하여 화면에 출력
  */
-class TextFragment : Fragment() {
+class SummarizeFragment : Fragment() {
 
     lateinit var textView: TextView
 
@@ -23,8 +23,8 @@ class TextFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val v = inflater.inflate(R.layout.fragment_text, container, false)
-        textView = v.findViewById(R.id.textViewText)
+        val v = inflater.inflate(R.layout.fragment_summarize, container, false)
+        textView = v.findViewById(R.id.textViewSummarize)
         return v
     }
 }

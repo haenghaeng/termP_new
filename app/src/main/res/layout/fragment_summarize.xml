@@ -3,14 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".fragment.TextFragment">
+    tools:context=".fragment.SummarizeFragment">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="문서에서 텍스트를 추출중입니다."
+        android:text="내용을 요약중입니다.\n잠시만 기다려 주세요!"
         android:padding="30dp"
         android:textSize="15dp"
-        android:id="@+id/textViewText"/>
+        android:id="@+id/textViewSummarize"/>
 
 </FrameLayout>
