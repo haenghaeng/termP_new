@@ -4,6 +4,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.os.Environment
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -14,6 +15,7 @@ import com.example.termp_new.fragment.ImageFragment
 import com.example.termp_new.fragment.SummarizeFragment
 import com.example.termp_new.fragment.TextFragment
 import com.example.termp_new.openAi.Image_to_text
+import com.example.termp_new.openAi.TextClassify
 import org.opencv.android.Utils
 import org.opencv.core.Mat
 import org.opencv.imgproc.Imgproc
@@ -22,6 +24,8 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
+import java.text.SimpleDateFormat
+import java.util.Date
 
 
 class ResultActivity : AppCompatActivity() {
@@ -33,6 +37,9 @@ class ResultActivity : AppCompatActivity() {
 
     lateinit var tempFile : File
 
+    var foldername = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath + "/File"
+    var filename= "file.txt"
+    var filename_gpt="summarized_file.txt"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_result)
@@ -76,14 +83,12 @@ class ResultActivity : AppCompatActivity() {
 
                 if(position == 1 && textFragment.textView.text == "문서에서 텍스트를 추출중입니다."){
                     // 추출한 비트맵에서 텍스트를 추출하여 textView에 출력
-//                    TODO()
-//                    Image_to_text.Write_Text(bitmap, this@ResultActivity, textFragment.textView)
+                    Image_to_text.Write_Text(bitmap, this@ResultActivity, textFragment.textView)
                 }
 
                 if(position == 2 && summarizeFragment.textView.text == "내용을 요약중입니다.\n잠시만 기다려 주세요!"){
                     // 추출한 비트맵에서 텍스트를 추출하고 요약본을 textView에 출력
-//                    TODO()
-                    Image_to_text.Write_Text(bitmap, this@ResultActivity, summarizeFragment.textView)
+                    TextClassify.process_text_Gpt(this@ResultActivity, summarizeFragment.textView)
                 }
             }
         })
@@ -193,14 +198,54 @@ class ResultActivity : AppCompatActivity() {
      * 문서에서 추출한 텍스트를 저장
      */
     fun saveText(){
-        TODO()
+        lateinit var adapter : MyPagerAdapter
+        adapter = MyPagerAdapter(this)
+        viewPager.adapter = adapter
+
+        val textFragment = (adapter.fragments[1]) as TextFragment
+        val text=textFragment.textView.getText().toString()
+        if (text.length==0) {
+            Toast.makeText(this, "저장할 텍스트가 없습니다.", Toast.LENGTH_LONG).show()
+        } else {
+            //파일 작성시간을 추가하는 것. 필요에 따라 제거
+            val now = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
+            val contents = "파일 내용 :\n$text \n파일 작성 시간 : $now\n"
+            val dir = File(foldername)
+            if (!dir.exists()) {
+                dir.mkdir()
+            }
+            val fos = FileOutputStream("$foldername/$filename")
+            fos.write(contents.toByteArray())
+            fos.close()
+            Toast.makeText(this, "txt파일이 생성되었습니다.", Toast.LENGTH_LONG).show()
+        }
     }
 
     /**
      * 문서에서 추출한 텍스트의 요약본을 저장
      */
     fun saveSummarizedText(){
-        TODO()
+        adapter = MyPagerAdapter(this)
+        viewPager.adapter = adapter
+
+        val summarizeFragment = (adapter.fragments[2]) as SummarizeFragment
+        val text=summarizeFragment.textView.getText().toString()
+        if (text.length==0) {
+            Toast.makeText(this, "저장할 텍스트가 없습니다.", Toast.LENGTH_LONG).show()
+        } else {
+            //val now = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
+            //val contents = "파일 내용 :\n$text \n파일 작성 시간 : $now\n"
+
+            val contents="요약된 내용 :\n$text\n"
+            val dir = File(foldername)
+            if (!dir.exists()) {
+                dir.mkdir()
+            }
+            val fos = FileOutputStream("$foldername/$filename_gpt")
+            fos.write(contents.toByteArray())
+            fos.close()
+            Toast.makeText(this, "txt파일이 생성되었습니다.", Toast.LENGTH_LONG).show()
+        }
     }
 
 
