@@ -26,7 +26,7 @@ public class TextClassify {
     final static String filename = "file.txt";
     public static void WriteTextFile(Activity activity, TextView textView, String foldername, String filename, String contents,OpenAiCallback callback) throws IOException, InterruptedException {
         //textView= textView.findViewById(R.id.textView);;
-        String question=contents+" please summarize this into 3 lines.";
+        String question=contents+" 이 내용을 3줄 내외로 요약 해 주세요. 존댓말을 사용해 주세요.";
 
         Gpt.getResponse(question, new VolleyCallback() {
             @Override

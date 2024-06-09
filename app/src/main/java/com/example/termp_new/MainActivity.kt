@@ -156,6 +156,9 @@ class MainActivity : AppCompatActivity() {
             // ResultActivity 실행
             startActivity(Intent(this@MainActivity, ResultActivity::class.java))
         }
+        else{
+            Toast.makeText(this, "네 모서리가 다 보이게 어두운 배경에서 촬영해주세요!", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun functionBtnClick(){
