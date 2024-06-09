@@ -29,9 +29,7 @@ class InitActivity : AppCompatActivity() {
         }
         else {
             startActivity(Intent(this@InitActivity, MainActivity::class.java))
-            finish()
         }
-
     }
 
     /**
@@ -66,7 +64,6 @@ class InitActivity : AppCompatActivity() {
             if (hasPermissions(PERMISSIONS_REQUIRED)) {
                 // 권한이 모두 부여되었을 때 필요한 작업 수행
                 startActivity(Intent(this@InitActivity, MainActivity::class.java))
-                finish()
             } else {
                 // 권한이 부여되지 않았을 때 사용자에게 메시지 표시 또는 다른 처리 수행
                 Toast.makeText(this, "권한이 사용자에 의해 거부되었습니다.", Toast.LENGTH_SHORT).show()
