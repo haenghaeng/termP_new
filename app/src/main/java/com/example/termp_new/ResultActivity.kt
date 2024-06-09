@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Environment
+import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -16,6 +17,13 @@ import com.example.termp_new.fragment.SummarizeFragment
 import com.example.termp_new.fragment.TextFragment
 import com.example.termp_new.openAi.Image_to_text
 import com.example.termp_new.openAi.TextClassify
+import com.google.firebase.ml.vision.text.FirebaseVisionText
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.opencv.android.Utils
 import org.opencv.core.Mat
 import org.opencv.imgproc.Imgproc
@@ -26,7 +34,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
-
+import kotlin.coroutines.resume
 
 class ResultActivity : AppCompatActivity() {
 
@@ -40,6 +48,10 @@ class ResultActivity : AppCompatActivity() {
     var foldername = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).absolutePath + "/File"
     var filename= "file.txt"
     var filename_gpt="summarized_file.txt"
+
+    lateinit var resultText : FirebaseVisionText
+    lateinit var resultGPT : String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_result)
@@ -73,22 +85,102 @@ class ResultActivity : AppCompatActivity() {
         val inputStream = tempFile.toUri().let { contentResolver.openInputStream(it) }
         val bitmap = BitmapFactory.decodeStream(inputStream)
 
+//        코루틴 1. coroutine_getText
+//        텍스트 요약 시작
+//        요약이 끝나면 그 텍스트를 resultText에 저장
+//        resultText에 있는 내용을 GPT에 전달
+//        GPT에게 결과를 받으면 그걸 ResultGPT에 저장
+//
+//        코루틴 2. coroutine_waitText
+//        textFragment가 초기화 될 때까지 + resultText의 내용이 null이 아닐때까지 대기
+//        두 조건을 만족하면 textFragment의 textView의 내용 갱신
+//
+//        코루틴 3. coroutine_waitGPT
+//        SummarizeFragment가 초기화 될 때까지 + resultGPT의 내용이 null이 아닐때까지 대기
+//        두 조건을 만족하면 SummarizeFragment의 textView의 내용 갱신
+
+        val coroutine_getText = CoroutineScope(Dispatchers.Default)
+        val coroutine_waitText = CoroutineScope(Dispatchers.Main) // UI 내용을 변경하는 작업은 Main에서 해야 함
+        val coroutine_waitGPT = CoroutineScope(Dispatchers.Main)
+
+        suspend fun waitForResultText() {
+            return suspendCancellableCoroutine { continuation ->
+                // 주기적으로 조건을 확인합니다.
+                CoroutineScope(Dispatchers.Default).launch {
+                    while (!::resultText.isInitialized) {
+                        delay(100)  // 100ms 대기 후 다시 조건 확인
+                    }
+                    // 조건이 만족되면 코루틴을 재개합니다.
+                    continuation.resume(Unit)
+                }
+            }
+        }
+        suspend fun waitForResultGPT() {
+            return suspendCancellableCoroutine { continuation ->
+                CoroutineScope(Dispatchers.Default).launch {
+                    while (!::resultGPT.isInitialized) {
+                        delay(100)
+                    }
+                    continuation.resume(Unit)
+                }
+            }
+        }
+
+        suspend fun waitForTextFragmentInit() {
+            return suspendCancellableCoroutine { continuation ->
+                CoroutineScope(Dispatchers.Default).launch {
+                    while (!textFragment.isAdded) {
+                        delay(100)
+                    }
+                    continuation.resume(Unit)
+                }
+            }
+        }
+
+        suspend fun waitForSummarizeFragmentInit() {
+            return suspendCancellableCoroutine { continuation ->
+                CoroutineScope(Dispatchers.Default).launch {
+                    while (!summarizeFragment.isAdded) {
+                        delay(100)
+                    }
+                    continuation.resume(Unit)
+                }
+            }
+        }
+
+        coroutine_getText.launch {
+            // 텍스트 요약 시작
+            Image_to_text.Write_Text(bitmap, this@ResultActivity)
+            // 텍스트 추출이 끝날때까지 대기
+            waitForResultText()
+            // 추출이 끝났으므로 GPT에 보냄
+            TextClassify.process_text_Gpt(resultText.text,this@ResultActivity)
+        }
+
+        coroutine_waitText.launch {
+            // 텍스트 추출이 끝날때까지 대기
+            waitForResultText()
+            // TextFragment가 초기화 될 때까지 대기
+            waitForTextFragmentInit()
+            // textView에 텍스트 지정
+            textFragment.textView.text = resultText.text
+        }
+
+        coroutine_waitGPT.launch {
+            // 요약이 끝날때까지 대기
+            waitForResultGPT()
+            // SummarizeFragment가 초기화 될 때까지 대기
+            waitForSummarizeFragmentInit()
+            // textView에 텍스트 지정
+            summarizeFragment.textView.text = resultGPT
+        }
+
         // viewpager에 리스너를 연결하여 TextFragment로 옮길 때 함수를 실행
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 if(position == 0 && imageFragment.imageView.drawable == null){
                     // 이미지 지정
                     imageFragment.setImage(tempFile.toUri())
-                }
-
-                if(position == 1 && textFragment.textView.text == "문서에서 텍스트를 추출중입니다."){
-                    // 추출한 비트맵에서 텍스트를 추출하여 textView에 출력
-                    Image_to_text.Write_Text(bitmap, this@ResultActivity, textFragment.textView)
-                }
-
-                if(position == 2 && summarizeFragment.textView.text == "내용을 요약중입니다.\n잠시만 기다려 주세요!"){
-                    // 추출한 비트맵에서 텍스트를 추출하고 요약본을 textView에 출력
-                    TextClassify.process_text_Gpt(this@ResultActivity, summarizeFragment.textView)
                 }
             }
         })
@@ -198,26 +290,26 @@ class ResultActivity : AppCompatActivity() {
      * 문서에서 추출한 텍스트를 저장
      */
     fun saveText(){
-        lateinit var adapter : MyPagerAdapter
-        adapter = MyPagerAdapter(this)
-        viewPager.adapter = adapter
-
-        val textFragment = (adapter.fragments[1]) as TextFragment
-        val text=textFragment.textView.getText().toString()
-        if (text.length==0) {
-            Toast.makeText(this, "저장할 텍스트가 없습니다.", Toast.LENGTH_LONG).show()
-        } else {
-            //파일 작성시간을 추가하는 것. 필요에 따라 제거
-            val now = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
-            val contents = "파일 내용 :\n$text \n파일 작성 시간 : $now\n"
-            val dir = File(foldername)
-            if (!dir.exists()) {
-                dir.mkdir()
+        if(::resultText.isInitialized){
+            val txt = resultText.text
+            if (txt.isEmpty()) {
+                Toast.makeText(this, "저장할 텍스트가 없습니다.", Toast.LENGTH_LONG).show()
+            } else {
+                //파일 작성시간을 추가하는 것. 필요에 따라 제거
+                val now = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
+                val contents = "파일 내용 :\n$txt \n파일 작성 시간 : $now\n"
+                val dir = File(foldername)
+                if (!dir.exists()) {
+                    dir.mkdir()
+                }
+                val fos = FileOutputStream("$foldername/$filename")
+                fos.write(contents.toByteArray())
+                fos.close()
+                Toast.makeText(this, "txt파일이 생성되었습니다.", Toast.LENGTH_LONG).show()
             }
-            val fos = FileOutputStream("$foldername/$filename")
-            fos.write(contents.toByteArray())
-            fos.close()
-            Toast.makeText(this, "txt파일이 생성되었습니다.", Toast.LENGTH_LONG).show()
+        }
+        else{
+            Toast.makeText(this, "아직 추출이 끝나지 않았습니다.", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -225,30 +317,25 @@ class ResultActivity : AppCompatActivity() {
      * 문서에서 추출한 텍스트의 요약본을 저장
      */
     fun saveSummarizedText(){
-        adapter = MyPagerAdapter(this)
-        viewPager.adapter = adapter
-
-        val summarizeFragment = (adapter.fragments[2]) as SummarizeFragment
-        val text=summarizeFragment.textView.getText().toString()
-        if (text.length==0) {
-            Toast.makeText(this, "저장할 텍스트가 없습니다.", Toast.LENGTH_LONG).show()
-        } else {
-            //val now = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Date())
-            //val contents = "파일 내용 :\n$text \n파일 작성 시간 : $now\n"
-
-            val contents="요약된 내용 :\n$text\n"
-            val dir = File(foldername)
-            if (!dir.exists()) {
-                dir.mkdir()
+        if(::resultGPT.isInitialized){
+            if (resultGPT.isEmpty()) {
+                Toast.makeText(this, "저장할 텍스트가 없습니다.", Toast.LENGTH_LONG).show()
+            } else {
+                val contents="요약된 내용 :\n$resultGPT\n"
+                val dir = File(foldername)
+                if (!dir.exists()) {
+                    dir.mkdir()
+                }
+                val fos = FileOutputStream("$foldername/$filename_gpt")
+                fos.write(contents.toByteArray())
+                fos.close()
+                Toast.makeText(this, "txt파일이 생성되었습니다.", Toast.LENGTH_LONG).show()
             }
-            val fos = FileOutputStream("$foldername/$filename_gpt")
-            fos.write(contents.toByteArray())
-            fos.close()
-            Toast.makeText(this, "txt파일이 생성되었습니다.", Toast.LENGTH_LONG).show()
+        }
+        else{
+            Toast.makeText(this, "아직 요약이 끝나지 않았습니다.", Toast.LENGTH_LONG).show()
         }
     }
-
-
 
     /**
      * 현재 파일을 저장하지 않고 MainActivity로 돌아갑니다.
@@ -256,9 +343,6 @@ class ResultActivity : AppCompatActivity() {
     fun resetBtnClick(){
         // 임시파일 제거
         tempFile.delete()
-        
-        // 메세지 띄움
-        Toast.makeText(this, "저장하지 않고 돌아왔습니다!", Toast.LENGTH_SHORT).show()        
 
         // MainActivity 실행
         startActivity(Intent(this@ResultActivity, MainActivity::class.java))
