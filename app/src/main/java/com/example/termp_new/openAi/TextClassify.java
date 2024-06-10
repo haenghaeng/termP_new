@@ -1,20 +1,9 @@
 package com.example.termp_new.openAi;
 
-import android.app.Activity;
-import android.os.Environment;
-import android.util.Log;
-import android.widget.TextView;
+
 import android.widget.Toast;
-
 import com.example.termp_new.ResultActivity;
-import com.google.firebase.ml.vision.text.FirebaseVisionText;
-
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
 
 public class TextClassify {
 
@@ -39,9 +28,10 @@ public class TextClassify {
         });
     }
 
-    public static void process_text_Gpt(String text, ResultActivity activity) throws IOException, InterruptedException {
+    public static void process_text_Gpt(String text, ResultActivity activity){
         if(text.isEmpty()){
-            Toast.makeText(MyApplication.ApplicationContext(),"텍스트가 인식되지 않았습니다.",Toast.LENGTH_LONG).show();
+            Toast.makeText(activity,"텍스트를 요약할 수 없었습니다.",Toast.LENGTH_LONG).show();
+            activity.setResultGPT("텍스트를 요약할 수 없었습니다.");
         }
         else{
             WriteTextFile(activity,text,new OpenAiCallback(){

@@ -5,7 +5,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Environment
-import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -20,7 +19,6 @@ import com.example.termp_new.openAi.TextClassify
 import com.google.firebase.ml.vision.text.FirebaseVisionText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -99,8 +97,10 @@ class ResultActivity : AppCompatActivity() {
 //        SummarizeFragment가 초기화 될 때까지 + resultGPT의 내용이 null이 아닐때까지 대기
 //        두 조건을 만족하면 SummarizeFragment의 textView의 내용 갱신
 
-        val coroutine_getText = CoroutineScope(Dispatchers.Default)
-        val coroutine_waitText = CoroutineScope(Dispatchers.Main) // UI 내용을 변경하는 작업은 Main에서 해야 함
+        // UI 내용을 변경하는 작업은 Main에서 해야 함
+        // Toast 메세지도 UI와 관련되 있으므로 Main으로 해야 함
+        val coroutine_getText = CoroutineScope(Dispatchers.Main)
+        val coroutine_waitText = CoroutineScope(Dispatchers.Main)
         val coroutine_waitGPT = CoroutineScope(Dispatchers.Main)
 
         suspend fun waitForResultText() {
@@ -149,7 +149,7 @@ class ResultActivity : AppCompatActivity() {
         }
 
         coroutine_getText.launch {
-            // 텍스트 요약 시작
+            // 텍스트 추출 시작
             Image_to_text.Write_Text(bitmap, this@ResultActivity)
             // 텍스트 추출이 끝날때까지 대기
             waitForResultText()
@@ -163,7 +163,11 @@ class ResultActivity : AppCompatActivity() {
             // TextFragment가 초기화 될 때까지 대기
             waitForTextFragmentInit()
             // textView에 텍스트 지정
-            textFragment.textView.text = resultText.text
+            if(resultText.text.isEmpty()){
+                textFragment.textView.text = "텍스트를 인식할 수 없었습니다."
+            }
+            else
+                textFragment.textView.text = resultText.text
         }
 
         coroutine_waitGPT.launch {
@@ -172,7 +176,10 @@ class ResultActivity : AppCompatActivity() {
             // SummarizeFragment가 초기화 될 때까지 대기
             waitForSummarizeFragmentInit()
             // textView에 텍스트 지정
-            summarizeFragment.textView.text = resultGPT
+            if(resultGPT.isEmpty())
+                summarizeFragment.textView.text = "텍스트를 요약할 수 없었습니다."
+            else
+                summarizeFragment.textView.text = resultGPT
         }
 
         // viewpager에 리스너를 연결하여 TextFragment로 옮길 때 함수를 실행
